@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#EFEEF3">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="description" content="Stations Vélib les plus proches en temps réel">
+  <title>Vébile</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header id="app-header">
+    <img src="assets/logo.png" alt="Vébile" id="logo" width="186" height="54">
+  </header>
+
+  <main id="station-container">
+
+    <!-- Géolocalisation refusée -->
+    <div id="screen-geo-denied" class="screen" hidden>
+      <img src="assets/logo.png" alt="" class="screen-logo" aria-hidden="true">
+      <h2>Position requise</h2>
+      <p>Vébile utilise votre position GPS pour trouver les stations Vélib les plus proches.</p>
+      <button id="btn-retry-geo" class="btn-primary">Activer la géolocalisation</button>
+    </div>
+
+    <!-- Erreur réseau -->
+    <div id="screen-error" class="screen" hidden>
+      <img src="assets/logo.png" alt="" class="screen-logo faded" aria-hidden="true">
+      <h2>Connexion impossible</h2>
+      <p id="error-message">Impossible de charger les stations Vélib.</p>
+    </div>
+
+    <!-- Liste des stations -->
+    <div id="station-list" role="list" aria-label="Stations Vélib proches"></div>
+
+  </main>
+
+  <footer id="bottom-bar">
+    <button id="btn-show-more" class="btn-show-more" aria-label="Afficher plus de stations">
+      Afficher +
+    </button>
+    <button id="btn-refresh" class="btn-refresh" aria-label="Actualiser">
+      <!-- Icône refresh extraite de Figma, redimensionnée à 20×20 -->
+      <svg width="20" height="20" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <g clip-path="url(#clip0)">
+          <path d="M21 12H27V6" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M27 12L23.465 8.465C21.4178 6.41787 18.6461 5.26035 15.751 5.2435C12.8559 5.22665 10.0709 6.35183 8 8.375" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M11 20H5V26" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M5 20L8.535 23.535C10.5822 25.5821 13.3539 26.7396 16.249 26.7565C19.1441 26.7733 21.9291 25.6482 24 23.625" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </g>
+        <defs>
+          <clipPath id="clip0"><rect width="32" height="32" fill="white"/></clipPath>
+        </defs>
+      </svg>
+    </button>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
