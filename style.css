@@ -12,7 +12,7 @@
   --blue:         #61B7D3;
   --gray-badge:   #CFCFCF;
 
-  --header-h:     72px;
+  --header-h:     100px;
   --footer-h:     88px;
   --container-mx: 20px;   /* marge gauche/droite du container blanc */
   --radius-list:  20px;
@@ -45,9 +45,9 @@ html, body {
 }
 
 #logo {
-  /* Affiché à la moitié de la taille Figma (186×54 @3x → 93×27 CSS) */
-  height: 32px;
+  height: 64px;
   width: auto;
+  mix-blend-mode: multiply; /* blendMode: MULTIPLY dans Figma — blanc → transparent */
 }
 
 /* ── Container liste (le "sheet" blanc) ────────────────────────────────────── */
