@@ -15,7 +15,7 @@ let loading        = false;
 
 // ── DOM ────────────────────────────────────────────────────────────────────────
 const $list      = document.getElementById('station-list');
-const $showMore  = document.getElementById('btn-show-more');
+const $loader    = document.getElementById('scroll-loader');
 const $refresh   = document.getElementById('btn-refresh');
 const $geoDenied = document.getElementById('screen-geo-denied');
 const $error     = document.getElementById('screen-error');
@@ -197,17 +197,17 @@ function skeletonHTML() {
     </div>`).join('');
 }
 
-function renderMore() {
+async function renderMore() {
+  if (loading || displayedCount >= stations.length) return;
+  loading = true;
+  $loader.hidden = false;
+  // Double rAF : laisse le navigateur peindre le loader avant l'insertion DOM
+  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
   const slice = stations.slice(displayedCount, displayedCount + PAGE_SIZE);
   slice.forEach(s => $list.insertAdjacentHTML('beforeend', cardHTML(s)));
   displayedCount += slice.length;
-  syncShowMore();
-}
-
-function syncShowMore() {
-  const done = displayedCount >= stations.length;
-  $showMore.disabled = done;
-  $showMore.classList.toggle('btn--disabled', done);
+  $loader.hidden = true;
+  loading = false;
 }
 
 function updateArrows() {
@@ -221,28 +221,25 @@ function updateArrows() {
 
 // ── États UI ───────────────────────────────────────────────────────────────────
 function showSkeletons() {
-  $geoDenied.hidden  = true;
-  $error.hidden      = true;
-  $list.innerHTML    = skeletonHTML();
-  $showMore.disabled = true;
-  $showMore.classList.add('btn--disabled');
+  $geoDenied.hidden = true;
+  $error.hidden     = true;
+  $loader.hidden    = true;
+  $list.innerHTML   = skeletonHTML();
 }
 
 function showGeoDenied() {
-  $list.innerHTML    = '';
-  $geoDenied.hidden  = false;
-  $error.hidden      = true;
-  $showMore.disabled = true;
-  $showMore.classList.add('btn--disabled');
+  $list.innerHTML   = '';
+  $loader.hidden    = true;
+  $geoDenied.hidden = false;
+  $error.hidden     = true;
 }
 
 function showError(msg) {
-  $list.innerHTML    = '';
-  $error.hidden      = false;
-  $geoDenied.hidden  = true;
+  $list.innerHTML       = '';
+  $loader.hidden        = true;
+  $error.hidden         = false;
+  $geoDenied.hidden     = true;
   $errorMsg.textContent = msg || 'Impossible de charger les données.';
-  $showMore.disabled = true;
-  $showMore.classList.add('btn--disabled');
 }
 
 // ── Chargement ─────────────────────────────────────────────────────────────────
@@ -251,14 +248,14 @@ async function loadStations() {
   loading = true;
   showSkeletons();
   try {
-    stations       = await fetchStations();
+    stations        = await fetchStations();
     $list.innerHTML = '';
     displayedCount  = 0;
-    renderMore();
+    loading = false; // libérer avant renderMore qui gère son propre flag
+    await renderMore();
   } catch (e) {
-    showError(e.message);
-  } finally {
     loading = false;
+    showError(e.message);
   }
 }
 
@@ -277,9 +274,15 @@ async function init() {
 }
 
 // ── Événements ─────────────────────────────────────────────────────────────────
-$showMore.addEventListener('click', () => {
-  if (!$showMore.disabled && !loading) renderMore();
-});
+
+// Infinite scroll : déclenche renderMore à 100px avant la fin du container
+$container.addEventListener('scroll', () => {
+  if (loading || displayedCount >= stations.length) return;
+  const { scrollTop, scrollHeight, clientHeight } = $container;
+  if (scrollHeight - scrollTop - clientHeight < 100) {
+    renderMore();
+  }
+}, { passive: true });
 
 $refresh.addEventListener('click', async () => {
   if (loading) return;

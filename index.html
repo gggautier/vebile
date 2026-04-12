@@ -39,12 +39,16 @@
     <!-- Liste des stations -->
     <div id="station-list" role="list" aria-label="Stations Vélib proches"></div>
 
+    <!-- Loader infinite scroll -->
+    <div id="scroll-loader" hidden>
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+
   </main>
 
   <footer id="bottom-bar">
-    <button id="btn-show-more" class="btn-show-more" aria-label="Afficher plus de stations">
-      Afficher +
-    </button>
     <button id="btn-refresh" class="btn-refresh" aria-label="Actualiser">
       <!-- Icône refresh extraite de Figma, redimensionnée à 20×20 -->
       <svg width="20" height="20" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
