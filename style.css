@@ -18,6 +18,8 @@
   --color-border:       #E5E5EA;
   --color-modal-bg:     #FFFFFF;
   --color-loader-dot:   #E8E7EE;
+  --color-nav-border:   #E2E1EA;   /* Figma: fill_5NGL0K — bordure CTA-location */
+  --shadow-cta:         4px 4px 10px 0px rgba(0, 0, 0, 0.04); /* Figma: shad-CTA */
 
   /* ── Aliases rétrocompat ── */
   --bg:         var(--color-bg);
