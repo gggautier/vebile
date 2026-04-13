@@ -2,29 +2,65 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  /* Figma tokens */
-  --bg:           #EFEEF3;
-  --surface:      #FAFAFA;
-  --primary:      #000000;
-  --separator:    #EFEEF3;
+  /* ── Couleurs (design tokens) ── */
+  --color-bg:           #EFEEF3;
+  --color-surface:      #FAFAFA;
+  --color-primary:      #000000;
+  --color-separator:    #EFEEF3;
+  --color-green:        #5CC066;
+  --color-blue:         #61B7D3;
+  --color-gray-badge:   #CFCFCF;
+  --color-input-bg:     #E8E7EE;   /* Figma: fill_AKXTNX */
+  --color-icon-muted:   #BFBEC2;   /* Figma: fill_YD0M1H — icône pin résultats */
+  --color-tab-bg:       #E4E3EA;
+  --color-tab-inactive: #8E8E93;
+  --color-text-muted:   #6B6B6B;
+  --color-border:       #E5E5EA;
+  --color-modal-bg:     #FFFFFF;
+  --color-loader-dot:   #E8E7EE;
 
-  --green:        #5CC066;
-  --blue:         #61B7D3;
-  --gray-badge:   #CFCFCF;
+  /* ── Aliases rétrocompat ── */
+  --bg:         var(--color-bg);
+  --surface:    var(--color-surface);
+  --primary:    var(--color-primary);
+  --separator:  var(--color-separator);
+  --green:      var(--color-green);
+  --blue:       var(--color-blue);
+  --gray-badge: var(--color-gray-badge);
 
-  --header-h:     100px;
-  --footer-h:     88px;
-  --container-mx: 20px;   /* marge gauche/droite du container blanc */
-  --radius-list:  20px;
+  /* ── Espacements ── */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 20px;
+  --spacing-xl: 24px;
+
+  /* ── Dimensions ── */
+  --height-header:   100px;
+  --height-location:  60px;
+  --height-footer:    88px;
+
+  /* ── Aliases rétrocompat ── */
+  --header-h:     var(--height-header);
+  --footer-h:     var(--height-footer);
+  --container-mx: 20px;
+
+  /* ── Border-radius ── */
+  --radius-pill:  360px;
+  --radius-card:  20px;
   --radius-nav:   14px;
+  --radius-input: 14px;
+
+  /* ── Alias rétrocompat ── */
+  --radius-list: var(--radius-card);
 }
 
 /* ── Base ──────────────────────────────────────────────────────────────────── */
 html, body {
   height: 100%;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  background: var(--bg);
-  color: var(--primary);
+  background: var(--color-bg);
+  color: var(--color-primary);
   -webkit-font-smoothing: antialiased;
   overscroll-behavior: none;
 }
@@ -32,11 +68,9 @@ html, body {
 /* ── Header ────────────────────────────────────────────────────────────────── */
 #app-header {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: var(--header-h);
-  background: var(--bg);
+  top: 0; left: 0; right: 0;
+  height: var(--height-header);
+  background: var(--color-bg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -47,32 +81,118 @@ html, body {
 #logo {
   height: 64px;
   width: auto;
-  mix-blend-mode: multiply; /* blendMode: MULTIPLY dans Figma — blanc → transparent */
+  mix-blend-mode: multiply;
 }
 
-/* ── Container liste (le "sheet" blanc) ────────────────────────────────────── */
-#station-container {
+/* ── Barre de localisation ─────────────────────────────────────────────────── */
+#location-bar {
   position: fixed;
-  top: var(--header-h);
+  top: var(--height-header);
   left: var(--container-mx);
   right: var(--container-mx);
-  bottom: var(--footer-h);
-  background: var(--surface);
-  border-radius: var(--radius-list) var(--radius-list) 0 0;
+  height: var(--height-location);
+  display: flex;
+  align-items: center;
+  z-index: 25;
+}
+
+.location-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  width: 100%;
+  height: 48px;
+  background: var(--color-input-bg);
+  border-radius: var(--radius-input);
+  padding: 0 var(--spacing-md);
+}
+
+/* Zone de tap transparente plein champ (derrière le contenu) */
+.location-tap-area {
+  position: absolute;
+  inset: 0;
+  background: transparent;
+  border: none;
+  border-radius: inherit;
+  cursor: pointer;
+  z-index: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.location-ico {
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+  position: relative;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.location-text {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  position: relative;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Bouton refresh dans le champ (au-dessus de la zone de tap) */
+.btn-loc-refresh {
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.15s;
+}
+
+.btn-loc-refresh:active { opacity: 0.5; }
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.btn-loc-refresh.is-spinning svg { animation: spin 0.6s linear infinite; }
+
+/* ── Container liste ───────────────────────────────────────────────────────── */
+#station-container {
+  position: fixed;
+  top: calc(var(--height-header) + var(--height-location));
+  left: var(--container-mx);
+  right: var(--container-mx);
+  bottom: var(--height-footer);
+  background: var(--color-surface);
+  border-radius: var(--radius-card) var(--radius-card) 0 0;
+  border: 1px solid var(--color-border);
+  border-bottom: none;
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   z-index: 20;
 }
 
-/* ── Bottom bar ────────────────────────────────────────────────────────────── */
+/* ── Bottom bar / Tabbar ───────────────────────────────────────────────────── */
 #bottom-bar {
   position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: var(--footer-h);
-  background: var(--bg);
+  bottom: 0; left: 0; right: 0;
+  height: var(--height-footer);
+  background: var(--color-bg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -81,56 +201,237 @@ html, body {
   z-index: 30;
 }
 
-/* ── Bouton refresh — rond 48×48 ───────────────────────────────────────────── */
-.btn-refresh {
-  width: 48px;
-  height: 48px;
-  background: var(--primary);
+#tabbar {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  max-width: 320px;
+  height: 52px;
+  background: var(--color-tab-bg);
+  border-radius: var(--radius-pill);
+  padding: 4px;
+}
+
+/* Gélule noire glissante */
+#tab-pill {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 50%;          /* largeur = 50% du tabbar − 4px de padding */
+  bottom: 4px;
+  background: var(--color-primary);
+  border-radius: var(--radius-pill);
+  transition: transform 0.28s cubic-bezier(0.34, 1.2, 0.64, 1);
+  pointer-events: none;
+}
+
+/* Mode Déposer : la gélule glisse vers la droite */
+#tabbar.mode-return #tab-pill {
+  transform: translateX(100%);
+}
+
+.tab-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
   border: none;
-  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  color: var(--color-tab-inactive);
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.2;
+  position: relative;
+  z-index: 1;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 0.2s;
+}
+
+.tab-item.is-active { color: #FFFFFF; }
+
+/* ── Modale de recherche ───────────────────────────────────────────────────── */
+/* Figma frame 27:332 — padding: 48px 20px 24px, gap: 12px */
+#search-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: var(--color-modal-bg);
+  transform: translateY(100%);
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: max(48px, env(safe-area-inset-top, 48px)) 20px 24px;
+  overflow-y: auto;
+}
+
+#search-modal.is-open { transform: translateY(0); }
+
+/* Figma Frame 10 — row, gap: 8px, fill width */
+.modal-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* Figma CTA-back — 40×40, rx=12, fond #EFEEF3 */
+.modal-back {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: var(--color-bg);
+  border: none;
+  border-radius: 12px;
   cursor: pointer;
-  flex-shrink: 0;
   -webkit-tap-highlight-color: transparent;
   transition: opacity 0.15s;
 }
 
-.btn-refresh:active { opacity: 0.75; }
+.modal-back:active { opacity: 0.7; }
 
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
+/* Figma Input — fill_AKXTNX + stroke #000 + radius 12px + padding 8px 10px 8px 12px */
+.search-input {
+  flex: 1;
+  background: var(--color-input-bg);
+  border: 1px solid var(--color-primary);
+  border-radius: 12px;
+  padding: 8px 10px 8px 12px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-primary);
+  outline: none;
+  -webkit-appearance: none;
 }
 
-.btn-refresh.is-spinning svg {
-  animation: spin 0.6s linear infinite;
+.search-input::placeholder           { color: var(--color-tab-inactive); font-weight: 400; }
+.search-input::-webkit-search-cancel-button { display: none; }
+
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+/* "Utiliser ma position" — padding vertical 20px, pas de padding horizontal (parent) */
+.btn-use-gps {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  width: 100%;
+  padding: 20px 8px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--color-separator);
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-primary);
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-use-gps:active { opacity: 0.6; }
+
+#search-results {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Figma bloc — row, gap: 10px, padding: 20px 8px, width: 320 */
+.search-result-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 20px 8px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--color-separator);
+  cursor: pointer;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.search-result-btn:last-child { border-bottom: none; }
+.search-result-btn:active     { opacity: 0.6; }
+
+/* Figma icon-32-pin — 32×32, fill_YD0M1H (#BFBEC2) */
+.result-pin { flex-shrink: 0; color: var(--color-icon-muted); }
+
+/* Figma Frame 8 — column, gap: 4px, fill */
+.result-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Figma style_SIHXU9 — Inter 600, 14px */
+.result-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Figma style_QXKI20 — Inter 400, 14px */
+.result-city {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--color-primary);
 }
 
 /* ── Carte station ─────────────────────────────────────────────────────────── */
-.station-card {
-  /* Pleine largeur du container (320px) */
-}
-
-/* Contenu interne : padding 24px haut/bas, 20px gauche/droite (Figma bloc) */
 .card-inner {
   display: flex;
   align-items: center;
-  gap: 4px;           /* gap=4 entre left et CTA-location (Figma) */
-  padding: 24px 20px;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xl) var(--spacing-lg);
 }
 
-/* Colonne gauche : nom + badges */
+/* Mode Emprunter : colonne gauche nom + badges */
 .card-left {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 5px;           /* gap=5 entre nom et badges (Figma) */
+  gap: 5px;
 }
 
-/* Nom station : Inter SemiBold 600, 10px (Figma) */
+/* Mode Déposer : badge gris | nom | bouton nav */
+.card-inner--return {
+  gap: var(--spacing-md);
+}
+
+.station-name--return {
+  flex: 1;
+  min-width: 0;
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-primary);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-height: 1.4;
+}
+
+/* Nom station */
 .station-name {
   font-family: 'Inter', sans-serif;
   font-size: 10px;
@@ -139,14 +440,11 @@ html, body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: #000000;
+  color: var(--color-primary);
 }
 
 /* ── Badges circulaires 56×56 ──────────────────────────────────────────────── */
-.badges {
-  display: flex;
-  gap: 4px;           /* gap=4 entre badges (Figma) */
-}
+.badges { display: flex; gap: var(--spacing-xs); }
 
 .badge {
   width: 56px;
@@ -158,16 +456,16 @@ html, body {
   font-family: 'Figtree', sans-serif;
   font-size: 24px;
   font-weight: 700;
-  color: #000000;
+  color: var(--color-primary);
   flex-shrink: 0;
   line-height: 1;
 }
 
-.badge--green { background: var(--green); }
-.badge--blue  { background: var(--blue); }
-.badge--gray  { background: var(--gray-badge); }
+.badge--green { background: var(--color-green); }
+.badge--blue  { background: var(--color-blue); }
+.badge--gray  { background: var(--color-gray-badge); }
 
-/* ── Bouton navigation (CTA-location) 82×80 ────────────────────────────────── */
+/* ── Bouton navigation 82×80 ───────────────────────────────────────────────── */
 .nav-btn {
   width: 82px;
   height: 80px;
@@ -177,39 +475,37 @@ html, body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;           /* gap=2 entre icône et distance (Figma) */
-  padding: 12px 19px; /* Figma: T=12 R=19 B=12 L=19 */
+  gap: 2px;
+  padding: 12px 19px;
   text-decoration: none;
-  color: #000000;
+  color: var(--color-primary);
   flex-shrink: 0;
   transition: background 0.12s;
   -webkit-tap-highlight-color: transparent;
 }
 
-.nav-btn:active { background: #DEDEDE; } /* status=pressed dans Figma */
+.nav-btn:active { background: #DEDEDE; }
 
-/* Icône flèche compass — extraite de Figma (path exact) */
 .nav-arrow {
   display: block;
   flex-shrink: 0;
   transition: transform 0.2s ease-out;
 }
 
-/* Distance : Inter Bold 700, 14px (Figma) */
 .nav-dist {
   font-family: 'Inter', sans-serif;
   font-size: 14px;
   font-weight: 700;
-  color: #000000;
+  color: var(--color-primary);
   white-space: nowrap;
   line-height: 1.2;
 }
 
-/* ── Séparateur 280×1 — inset 20px (Figma) ────────────────────────────────── */
+/* ── Séparateur ─────────────────────────────────────────────────────────────── */
 .card-sep {
   border: none;
-  border-top: 1px solid var(--separator);
-  margin: 0 20px;
+  border-top: 1px solid var(--color-separator);
+  margin: 0 var(--spacing-lg);
 }
 
 .station-card:last-child .card-sep { display: none; }
@@ -217,28 +513,20 @@ html, body {
 /* ── Skeleton ──────────────────────────────────────────────────────────────── */
 @keyframes shimmer {
   0%   { background-position: -600px 0; }
-  100% { background-position: 600px 0; }
+  100% { background-position:  600px 0; }
 }
 
 .skel {
-  background: linear-gradient(
-    90deg,
-    #E5E5EA 25%,
-    #F2F2F2 50%,
-    #E5E5EA 75%
-  );
+  background: linear-gradient(90deg, #E5E5EA 25%, #F2F2F2 50%, #E5E5EA 75%);
   background-size: 1200px 100%;
   animation: shimmer 1.6s infinite linear;
+  border-radius: 4px;
 }
 
-.skel-name  { height: 12px; width: 60%; border-radius: 4px; margin-bottom: 5px; }
-.skel-badges { display: flex; gap: 4px; }
-.skel-badge  { width: 56px; height: 56px; border-radius: 50%; }
-.skel-nav    {
-  width: 82px; height: 80px;
-  border-radius: var(--radius-nav);
-  flex-shrink: 0;
-}
+.skel-name   { height: 12px; width: 60%; margin-bottom: 5px; }
+.skel-badges { display: flex; gap: var(--spacing-xs); }
+.skel-badge  { width: 56px; height: 56px; border-radius: 50% !important; }
+.skel-nav    { width: 82px; height: 80px; border-radius: var(--radius-nav) !important; flex-shrink: 0; }
 
 /* ── Écrans (geo refusée / erreur) ─────────────────────────────────────────── */
 .screen {
@@ -248,32 +536,26 @@ html, body {
   justify-content: center;
   text-align: center;
   padding: 48px 28px;
-  min-height: calc(100vh - var(--header-h) - var(--footer-h));
+  min-height: calc(100vh - var(--height-header) - var(--height-location) - var(--height-footer));
   gap: 10px;
 }
 
-.screen[hidden] { display: none; }
-
-.screen-logo {
-  height: 40px;
-  width: auto;
-  margin-bottom: 8px;
-}
-
-.screen-logo.faded { opacity: 0.45; }
+.screen[hidden]        { display: none; }
+.screen-logo           { height: 40px; width: auto; margin-bottom: 8px; }
+.screen-logo.faded     { opacity: 0.45; }
 
 .screen h2 {
   font-family: 'Inter', sans-serif;
   font-size: 18px;
   font-weight: 700;
-  color: #000000;
+  color: var(--color-primary);
 }
 
 .screen p {
   font-family: 'Inter', sans-serif;
   font-size: 14px;
   font-weight: 400;
-  color: #6B6B6B;
+  color: var(--color-text-muted);
   line-height: 1.55;
   max-width: 260px;
 }
@@ -281,10 +563,10 @@ html, body {
 .btn-primary {
   margin-top: 20px;
   padding: 14px 28px;
-  background: #000000;
+  background: var(--color-primary);
   color: #FFFFFF;
   border: none;
-  border-radius: 360px;
+  border-radius: var(--radius-pill);
   font-family: 'Inter', sans-serif;
   font-size: 15px;
   font-weight: 500;
@@ -310,7 +592,7 @@ html, body {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #E8E7EE;
+  background: var(--color-loader-dot);
   animation: pulse-dot 1.2s ease-in-out infinite;
 }
 
@@ -319,5 +601,5 @@ html, body {
 
 @keyframes pulse-dot {
   0%, 80%, 100% { transform: scale(0.6); opacity: 0.5; }
-  40%           { transform: scale(1);   opacity: 1;   }
+  40%           { transform: scale(1);   opacity: 1; }
 }
