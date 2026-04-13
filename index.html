@@ -80,18 +80,20 @@
 
   <!-- ── Modale de recherche ─────────────────────────────────────────────── -->
   <div id="search-modal" role="dialog" aria-modal="true" aria-label="Rechercher une adresse">
-    <div class="modal-header">
-      <!-- CTA-back extrait de Figma : fond #EFEEF3, rx=12, flèche noire -->
-      <button id="btn-modal-back" class="modal-back" aria-label="Retour">
-        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true">
-          <path d="M12.2197 14.2197C12.5126 13.9268 12.9874 13.9268 13.2803 14.2197C13.5731 14.5126 13.5732 14.9873 13.2803 15.2802L9.56055 18.9999H32.75C33.1642 18.9999 33.5 19.3357 33.5 19.7499C33.5 20.1641 33.1642 20.4999 32.75 20.4999H9.56055L13.2803 24.2197C13.5731 24.5126 13.5732 24.9873 13.2803 25.2802C12.9874 25.5731 12.5126 25.5731 12.2197 25.2802L7.21973 20.2802C7.18771 20.2482 7.15978 20.2136 7.13477 20.1777C7.10404 20.1336 7.07743 20.0864 7.05664 20.0361C7.03591 19.9858 7.02105 19.9337 7.01172 19.8808C7.00423 19.8383 7 19.7946 7 19.7499C7 19.7046 7.00402 19.6602 7.01172 19.6171C7.02081 19.5663 7.03505 19.5162 7.05469 19.4677L7.05859 19.458C7.07018 19.4306 7.08596 19.4054 7.10059 19.3798C7.13303 19.323 7.17122 19.2682 7.21973 19.2197L12.2197 14.2197Z" fill="black"/>
-        </svg>
-      </button>
-      <input id="search-input" class="search-input" type="search"
-        placeholder="Rechercher une adresse…"
-        autocomplete="off" autocorrect="off" spellcheck="false">
-    </div>
-    <div class="modal-body">
+
+    <!-- Bloc fixe (ne scroll pas, reste visible quand le clavier s'ouvre) -->
+    <div class="modal-fixed">
+      <div class="modal-header">
+        <!-- CTA-back extrait de Figma : fond #EFEEF3, rx=12, flèche noire -->
+        <button id="btn-modal-back" class="modal-back" aria-label="Retour">
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+            <path d="M12.2197 14.2197C12.5126 13.9268 12.9874 13.9268 13.2803 14.2197C13.5731 14.5126 13.5732 14.9873 13.2803 15.2802L9.56055 18.9999H32.75C33.1642 18.9999 33.5 19.3357 33.5 19.7499C33.5 20.1641 33.1642 20.4999 32.75 20.4999H9.56055L13.2803 24.2197C13.5731 24.5126 13.5732 24.9873 13.2803 25.2802C12.9874 25.5731 12.5126 25.5731 12.2197 25.2802L7.21973 20.2802C7.18771 20.2482 7.15978 20.2136 7.13477 20.1777C7.10404 20.1336 7.07743 20.0864 7.05664 20.0361C7.03591 19.9858 7.02105 19.9337 7.01172 19.8808C7.00423 19.8383 7 19.7946 7 19.7499C7 19.7046 7.00402 19.6602 7.01172 19.6171C7.02081 19.5663 7.03505 19.5162 7.05469 19.4677L7.05859 19.458C7.07018 19.4306 7.08596 19.4054 7.10059 19.3798C7.13303 19.323 7.17122 19.2682 7.21973 19.2197L12.2197 14.2197Z" fill="black"/>
+          </svg>
+        </button>
+        <input id="search-input" class="search-input" type="search"
+          placeholder="Rechercher une adresse…"
+          autocomplete="off" autocorrect="off" spellcheck="false">
+      </div>
       <button id="btn-use-gps" class="btn-use-gps">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/>
@@ -99,8 +101,11 @@
         </svg>
         Utiliser ma position
       </button>
-      <div id="search-results" role="listbox" aria-label="Suggestions"></div>
     </div>
+
+    <!-- Zone scrollable : suggestions uniquement -->
+    <div id="search-results" role="listbox" aria-label="Suggestions"></div>
+
   </div>
 
   <!-- ── Barre de navigation basse ──────────────────────────────────────── -->
