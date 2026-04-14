@@ -38,6 +38,23 @@ const $tabBorrow     = document.getElementById('tab-borrow');
 const $tabReturn     = document.getElementById('tab-return');
 const $tabbar        = document.getElementById('tabbar');
 
+// ── Affichage localisation ─────────────────────────────────────────────────────
+// address = null  → mode GPS : une ligne, champ compact (--height-location: 60px)
+// address = str   → mode custom : deux lignes, champ élargi (--height-location: 76px)
+function setLocationDisplay(name, address = null) {
+  if (address) {
+    $locationText.innerHTML =
+      `<span class="loc-name">${esc(name)}</span>` +
+      `<span class="loc-addr">${esc(address)}</span>`;
+    $locationText.classList.add('has-subline');
+    document.documentElement.style.setProperty('--height-location', '76px');
+  } else {
+    $locationText.textContent = name;
+    $locationText.classList.remove('has-subline');
+    document.documentElement.style.removeProperty('--height-location');
+  }
+}
+
 // ── Géolocalisation ────────────────────────────────────────────────────────────
 function getPosition() {
   return new Promise((resolve, reject) => {
@@ -360,7 +377,7 @@ function renderSearchResults(results) {
     btn.addEventListener('click', async () => {
       userLat = lat;
       userLon = lon;
-      $locationText.textContent = mainName;
+      setLocationDisplay(mainName, secondary || null);
       closeModal();
       $container.scrollTop = 0;
       await loadStations();
@@ -395,7 +412,7 @@ async function refreshGPS() {
     gpsLon = userLon = pos.coords.longitude;
     // Reverse geocoding en parallèle du chargement
     reverseGeocode(userLat, userLon).then(label => {
-      if (label) $locationText.textContent = label;
+      if (label) setLocationDisplay(label); // GPS → une seule ligne
     });
     await loadStations();
     $container.scrollTop = 0;
@@ -418,7 +435,7 @@ async function init() {
       reverseGeocode(userLat, userLon),
       loadStations(),
     ]);
-    if (label) $locationText.textContent = label;
+    if (label) setLocationDisplay(label); // GPS → une seule ligne
   } catch (e) {
     if (e.code === 1 || e.message === 'no-geo') showGeoDenied();
     else showError('Impossible d\'accéder à votre position.');
