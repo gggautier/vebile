@@ -172,7 +172,7 @@ async function fetchStations() {
       mechanical: s.mechanical        ?? 0,
       ebike:      s.ebike             ?? 0,
       docks:      s.numdocksavailable ?? 0,
-      dist:       haversine(userLat, userLon, s.coordonnees_geo.lat, s.coordonnees_geo.lon),
+      dist:       haversine(gpsLat, gpsLon, s.coordonnees_geo.lat, s.coordonnees_geo.lon),
       bear:       calcBearing(gpsLat, gpsLon, s.coordonnees_geo.lat, s.coordonnees_geo.lon),
     }))
     .sort((a, b) => a.dist - b.dist);
