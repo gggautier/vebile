@@ -8,10 +8,10 @@ const PAGE_SIZE        = 5;
 const GEO_RADIUS       = 5000; // mètres
 
 // ── État ───────────────────────────────────────────────────────────────────────
-let userLat        = null; // centre de recherche (adresse saisie ou GPS)
-let userLon        = null;
-let gpsLat         = null; // position GPS réelle de l'utilisateur (jamais modifiée par la recherche)
-let gpsLon         = null;
+let userLat    = null; // position GPS réelle — distance boutons + point de départ Maps
+let userLon    = null; //   → ne change QUE si l'utilisateur clique "Utiliser ma position"
+let searchLat  = null; // lieu de recherche — rayon API + tri de la liste
+let searchLon  = null; //   → change à chaque sélection d'adresse dans la modale
 let compassHeading = null;
 let stations       = [];
 let displayedCount = 0;
@@ -173,8 +173,9 @@ function fmtDist(m) {
 
 // ── API Vélib ──────────────────────────────────────────────────────────────────
 async function fetchStations() {
-  const where   = `distance(coordonnees_geo,geom'POINT(${userLon} ${userLat})',${GEO_RADIUS}m)`;
-  const orderBy = `distance(coordonnees_geo,geom'POINT(${userLon} ${userLat})')`;
+  // Rayon et pré-tri API → depuis searchCoords (lieu recherché)
+  const where   = `distance(coordonnees_geo,geom'POINT(${searchLon} ${searchLat})',${GEO_RADIUS}m)`;
+  const orderBy = `distance(coordonnees_geo,geom'POINT(${searchLon} ${searchLat})')`;
   const url     = `${API_URL}?limit=100&where=${encodeURIComponent(where)}&order_by=${encodeURIComponent(orderBy)}`;
 
   const res = await fetch(url);
@@ -184,17 +185,22 @@ async function fetchStations() {
 
   return results
     .filter(s => s.coordonnees_geo?.lat && s.coordonnees_geo?.lon)
-    .map(s => ({
-      name:       s.name || s.stationcode || '—',
-      lat:        s.coordonnees_geo.lat,
-      lon:        s.coordonnees_geo.lon,
-      mechanical: s.mechanical        ?? 0,
-      ebike:      s.ebike             ?? 0,
-      docks:      s.numdocksavailable ?? 0,
-      dist:       haversine(gpsLat, gpsLon, s.coordonnees_geo.lat, s.coordonnees_geo.lon),
-      bear:       calcBearing(gpsLat, gpsLon, s.coordonnees_geo.lat, s.coordonnees_geo.lon),
-    }))
-    .sort((a, b) => a.dist - b.dist);
+    .map(s => {
+      const sLat = s.coordonnees_geo.lat;
+      const sLon = s.coordonnees_geo.lon;
+      return {
+        name:       s.name || s.stationcode || '—',
+        lat:        sLat,
+        lon:        sLon,
+        mechanical: s.mechanical        ?? 0,
+        ebike:      s.ebike             ?? 0,
+        docks:      s.numdocksavailable ?? 0,
+        dist:       haversine(userLat, userLon, sLat, sLon),   // depuis GPS → bouton
+        searchDist: haversine(searchLat, searchLon, sLat, sLon), // depuis recherche → tri
+        bear:       calcBearing(userLat, userLon, sLat, sLon),  // depuis GPS → flèche
+      };
+    })
+    .sort((a, b) => a.searchDist - b.searchDist); // ordre = proximité du lieu recherché
 }
 
 // ── Rendu ──────────────────────────────────────────────────────────────────────
@@ -216,9 +222,9 @@ function arrowSVG(deg) {
 
 function cardHTML(s) {
   const arrowDeg = compassHeading !== null ? s.bear - compassHeading : 0;
-  // origin = GPS réel, travelmode selon le mode actif
+  // origin = position GPS réelle (userCoords), travelmode selon le mode actif
   const travelmode = currentMode === 'return' ? 'bicycling' : 'walking';
-  const mapsHref   = `https://www.google.com/maps/dir/?api=1&origin=${gpsLat},${gpsLon}&destination=${s.lat},${s.lon}&travelmode=${travelmode}`;
+  const mapsHref   = `https://www.google.com/maps/dir/?api=1&origin=${userLat},${userLon}&destination=${s.lat},${s.lon}&travelmode=${travelmode}`;
   const navBtn     = `
     <a class="nav-btn"
        href="${mapsHref}"
@@ -377,8 +383,8 @@ function renderSearchResults(results) {
         <span class="result-city">${esc(secondary)}</span>
       </div>`;
     btn.addEventListener('click', async () => {
-      userLat = lat;
-      userLon = lon;
+      searchLat = lat;  // seul searchCoords change — userCoords (GPS) reste intact
+      searchLon = lon;
       setLocationDisplay(mainName, secondary || null);
       closeModal();
       $container.scrollTop = 0;
@@ -410,8 +416,8 @@ async function refreshGPS() {
   $btnRefresh.classList.add('is-spinning');
   try {
     const pos = await getPosition();
-    gpsLat = userLat = pos.coords.latitude;
-    gpsLon = userLon = pos.coords.longitude;
+    userLat = searchLat = pos.coords.latitude;  // GPS → les deux coords se synchronisent
+    userLon = searchLon = pos.coords.longitude;
     // Reverse geocoding en parallèle du chargement
     reverseGeocode(userLat, userLon).then(label => {
       if (label) setLocationDisplay(label); // GPS → une seule ligne
@@ -430,8 +436,8 @@ async function init() {
   showSkeletons();
   try {
     const pos = await getPosition();
-    gpsLat = userLat = pos.coords.latitude;
-    gpsLon = userLon = pos.coords.longitude;
+    userLat = searchLat = pos.coords.latitude;  // GPS → les deux coords se synchronisent
+    userLon = searchLon = pos.coords.longitude;
     // Reverse geocoding + chargement stations en parallèle
     const [label] = await Promise.all([
       reverseGeocode(userLat, userLon),
