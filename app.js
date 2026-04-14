@@ -68,12 +68,22 @@ async function reverseGeocode(lat, lon) {
 // ── Autocomplétion d'adresse (Nominatim / OpenStreetMap) ──────────────────────
 async function searchAddress(query) {
   try {
-    const url = `${GEOCODE_SEARCH}?q=${encodeURIComponent(query)}&countrycodes=fr&limit=5&format=json&addressdetails=1`;
-    const res = await fetch(url, {
+    const params = new URLSearchParams({
+      q:             query,
+      countrycodes:  'fr',
+      limit:         '5',
+      format:        'json',
+      addressdetails:'1',
+      extratags:     '1',
+      namedetails:   '1',
+      viewbox:       '2.2241,48.8155,2.4697,48.9021', // biais Paris sans exclure la France
+      bounded:       '0',
+    });
+    const res = await fetch(`${GEOCODE_SEARCH}?${params}`, {
       headers: { 'User-Agent': 'Vebile/1.0' },
     });
     if (!res.ok) return [];
-    return await res.json(); // tableau d'objets Nominatim
+    return await res.json();
   } catch {
     return [];
   }
@@ -150,7 +160,7 @@ async function fetchStations() {
       mechanical: s.mechanical        ?? 0,
       ebike:      s.ebike             ?? 0,
       docks:      s.numdocksavailable ?? 0,
-      dist:       haversine(gpsLat, gpsLon, s.coordonnees_geo.lat, s.coordonnees_geo.lon),
+      dist:       haversine(userLat, userLon, s.coordonnees_geo.lat, s.coordonnees_geo.lon),
       bear:       calcBearing(gpsLat, gpsLon, s.coordonnees_geo.lat, s.coordonnees_geo.lon),
     }))
     .sort((a, b) => a.dist - b.dist);
@@ -318,10 +328,10 @@ function renderSearchResults(results) {
   results.forEach(r => {
     const lat = parseFloat(r.lat);
     const lon = parseFloat(r.lon);
-    // Nom principal = tout ce qui précède la première virgule du display_name
-    const commaIdx   = r.display_name.indexOf(',');
-    const mainName   = commaIdx !== -1 ? r.display_name.slice(0, commaIdx).trim() : r.display_name;
-    const secondary  = commaIdx !== -1 ? r.display_name.slice(commaIdx + 1).trim() : '';
+    const mainName  = r.namedetails?.name || r.display_name.split(',')[0].trim();
+    const city      = r.address?.city || r.address?.town || r.address?.village || '';
+    const postcode  = r.address?.postcode || '';
+    const secondary = [city, postcode].filter(Boolean).join(' ');
 
     const btn = document.createElement('button');
     btn.className = 'search-result-btn';
