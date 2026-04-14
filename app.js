@@ -93,7 +93,9 @@ async function searchAddress(query) {
       addressdetails:'1',
       extratags:     '1',
       namedetails:   '1',
-      featuretype:   'settlement,railway,amenity',
+      // ⚠️ featuretype retiré : Nominatim n'accepte que country/state/city/settlement
+      // → avec 'settlement' actif, les entreprises (WeWork, etc.) étaient exclues
+      // → on laisse Nominatim chercher dans tous les types de lieux
       viewbox:       '2.2241,48.8155,2.4697,48.9021', // biais Paris sans exclure la France
       bounded:       '0',
     });
