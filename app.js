@@ -71,11 +71,12 @@ async function searchAddress(query) {
     const params = new URLSearchParams({
       q:             query,
       countrycodes:  'fr',
-      limit:         '5',
+      limit:         '8', // on en demande plus pour pouvoir re-trier
       format:        'json',
       addressdetails:'1',
       extratags:     '1',
       namedetails:   '1',
+      featuretype:   'settlement,railway,amenity',
       viewbox:       '2.2241,48.8155,2.4697,48.9021', // biais Paris sans exclure la France
       bounded:       '0',
     });
@@ -83,7 +84,18 @@ async function searchAddress(query) {
       headers: { 'User-Agent': 'Vebile/1.0' },
     });
     if (!res.ok) return [];
-    return await res.json();
+    const results = await res.json();
+
+    // Tri : gares/stations en tête, puis par importance décroissante
+    const TRANSPORT_TYPES = new Set(['station', 'halt', 'stop', 'railway']);
+    results.sort((a, b) => {
+      const aIsTransport = TRANSPORT_TYPES.has(a.type) ? 0 : 1;
+      const bIsTransport = TRANSPORT_TYPES.has(b.type) ? 0 : 1;
+      if (aIsTransport !== bIsTransport) return aIsTransport - bIsTransport;
+      return (parseFloat(b.importance) || 0) - (parseFloat(a.importance) || 0);
+    });
+
+    return results.slice(0, 5);
   } catch {
     return [];
   }
@@ -328,10 +340,13 @@ function renderSearchResults(results) {
   results.forEach(r => {
     const lat = parseFloat(r.lat);
     const lon = parseFloat(r.lon);
-    const mainName  = r.namedetails?.name || r.display_name.split(',')[0].trim();
-    const city      = r.address?.city || r.address?.town || r.address?.village || '';
-    const postcode  = r.address?.postcode || '';
-    const secondary = [city, postcode].filter(Boolean).join(' ');
+    const mainName   = r.namedetails?.name || r.display_name.split(',')[0].trim();
+    const road       = r.address?.road || r.address?.suburb || '';
+    const city       = r.address?.city || r.address?.town || r.address?.village || '';
+    const secondaryFull = [road, city].filter(Boolean).join(', ');
+    const secondary  = secondaryFull.length > 40
+      ? secondaryFull.slice(0, 39).trimEnd() + '…'
+      : secondaryFull;
 
     const btn = document.createElement('button');
     btn.className = 'search-result-btn';
