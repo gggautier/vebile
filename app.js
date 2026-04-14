@@ -8,8 +8,10 @@ const PAGE_SIZE        = 5;
 const GEO_RADIUS       = 5000; // mètres
 
 // ── État ───────────────────────────────────────────────────────────────────────
-let userLat        = null;
+let userLat        = null; // centre de recherche (adresse saisie ou GPS)
 let userLon        = null;
+let gpsLat         = null; // position GPS réelle de l'utilisateur (jamais modifiée par la recherche)
+let gpsLon         = null;
 let compassHeading = null;
 let stations       = [];
 let displayedCount = 0;
@@ -148,8 +150,8 @@ async function fetchStations() {
       mechanical: s.mechanical        ?? 0,
       ebike:      s.ebike             ?? 0,
       docks:      s.numdocksavailable ?? 0,
-      dist:       haversine(userLat, userLon, s.coordonnees_geo.lat, s.coordonnees_geo.lon),
-      bear:       calcBearing(userLat, userLon, s.coordonnees_geo.lat, s.coordonnees_geo.lon),
+      dist:       haversine(gpsLat, gpsLon, s.coordonnees_geo.lat, s.coordonnees_geo.lon),
+      bear:       calcBearing(gpsLat, gpsLon, s.coordonnees_geo.lat, s.coordonnees_geo.lon),
     }))
     .sort((a, b) => a.dist - b.dist);
 }
@@ -173,13 +175,15 @@ function arrowSVG(deg) {
 
 function cardHTML(s) {
   const arrowDeg = compassHeading !== null ? s.bear - compassHeading : 0;
-  const mapsHref = `https://www.google.com/maps/dir/?api=1&origin=${userLat},${userLon}&destination=${s.lat},${s.lon}&travelmode=walking`;
-  const navBtn   = `
+  // origin = GPS réel, travelmode selon le mode actif
+  const travelmode = currentMode === 'return' ? 'bicycling' : 'walking';
+  const mapsHref   = `https://www.google.com/maps/dir/?api=1&origin=${gpsLat},${gpsLon}&destination=${s.lat},${s.lon}&travelmode=${travelmode}`;
+  const navBtn     = `
     <a class="nav-btn"
        href="${mapsHref}"
        target="_blank"
        rel="noopener noreferrer"
-       aria-label="Naviguer vers ${esc(s.name)} — ${fmtDist(s.dist)} à pied">
+       aria-label="Naviguer vers ${esc(s.name)} — ${fmtDist(s.dist)}">
       ${arrowSVG(arrowDeg)}
       <span class="nav-dist">${fmtDist(s.dist)}</span>
     </a>`;
@@ -362,8 +366,8 @@ async function refreshGPS() {
   $btnRefresh.classList.add('is-spinning');
   try {
     const pos = await getPosition();
-    userLat   = pos.coords.latitude;
-    userLon   = pos.coords.longitude;
+    gpsLat = userLat = pos.coords.latitude;
+    gpsLon = userLon = pos.coords.longitude;
     // Reverse geocoding en parallèle du chargement
     reverseGeocode(userLat, userLon).then(label => {
       if (label) $locationText.textContent = label;
@@ -382,8 +386,8 @@ async function init() {
   showSkeletons();
   try {
     const pos = await getPosition();
-    userLat   = pos.coords.latitude;
-    userLon   = pos.coords.longitude;
+    gpsLat = userLat = pos.coords.latitude;
+    gpsLon = userLon = pos.coords.longitude;
     // Reverse geocoding + chargement stations en parallèle
     const [label] = await Promise.all([
       reverseGeocode(userLat, userLon),
