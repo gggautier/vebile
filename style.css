@@ -233,21 +233,22 @@ html, body {
   transform: translateX(100%);
 }
 
+/* Figma tab-cta layout_E9KUOA — row, gap: 8px, icon à gauche */
 .tab-item {
   flex: 1;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: 8px;
   border: none;
   background: transparent;
   cursor: pointer;
   color: var(--color-tab-inactive);
   font-family: 'Inter', sans-serif;
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 600;
-  line-height: 1.2;
+  line-height: 1.21em;
   position: relative;
   z-index: 1;
   -webkit-tap-highlight-color: transparent;
@@ -473,11 +474,13 @@ html, body {
 .badge--blue  { background: var(--color-blue); }
 .badge--gray  { background: var(--color-gray-badge); }
 
-/* ── Bouton navigation 82×80 ───────────────────────────────────────────────── */
+/* ── Bouton navigation 82×80 — Figma: border #E2E1EA + shad-CTA ───────────── */
 .nav-btn {
   width: 82px;
   height: 80px;
   background: #FFFFFF;
+  border: 1px solid var(--color-nav-border);
+  box-shadow: var(--shadow-cta);
   border-radius: var(--radius-nav);
   display: flex;
   flex-direction: column;
@@ -488,11 +491,12 @@ html, body {
   text-decoration: none;
   color: var(--color-primary);
   flex-shrink: 0;
-  transition: background 0.12s;
+  transition: background 0.12s, box-shadow 0.12s;
   -webkit-tap-highlight-color: transparent;
 }
 
-.nav-btn:active { background: #DEDEDE; }
+/* Figma status=pressed : shad-off → ombre supprimée */
+.nav-btn:active { background: #DEDEDE; box-shadow: none; }
 
 .nav-arrow {
   display: block;
